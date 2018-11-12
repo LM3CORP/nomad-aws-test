@@ -35,11 +35,20 @@ resource "aws_instance" "nomad_client" {
     timeout  = "10m"
   }
 
+  provisioner "file" {
+    source      = "files/nomad-setup.ps1"
+    destination = "C:\\Windows\\Temp\\nomad-setup.ps1"
+  }
+
+  provisioner "file" {
+    source      = "files/windows.hcl"
+    destination = "C:\\nomad\\windows.hcl"
+  }
+
   provisioner "remote-exec" {
     inline = [
-      "echo %USER%",
+      "powershell.exe -File C:\\Windows\\Temp\\nomad-setup.ps1",
     ]
-
   }
 
   tags {
@@ -67,6 +76,11 @@ resource "aws_instance" "nomad_server" {
     agent       = false
     user        = "ubuntu"
     private_key = "${file("~/.ssh/lm3corp.pem")}"
+  }
+
+  provisioner "file" {
+    source      = "files/sample.hcl"
+    destination = "/home/ubuntu/sample.hcl"
   }
 
   provisioner "file" {
@@ -135,8 +149,8 @@ resource "aws_security_group" "nomad_server_incoming_sg" {
   vpc_id      = "${module.vpc.vpc_id}"
 
   ingress {
-    from_port   = "4647"
-    to_port     = "4647"
+    from_port   = "4646"
+    to_port     = "4648"
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
