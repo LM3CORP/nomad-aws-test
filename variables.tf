@@ -22,7 +22,7 @@ variable "instance_type" {
 
 variable "instance_client_ips" {
   description = "The IPs to use for our client resources"
-  default = ["10.0.1.20", "10.0.1.21","10.0.1.22","10.0.1.23","10.0.1.24"]
+  default = ["10.0.1.20", "10.0.1.21","10.0.1.22"]
 }
 
 variable "instance_server_ips" {

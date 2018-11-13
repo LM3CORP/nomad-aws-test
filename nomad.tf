@@ -9,6 +9,15 @@ module "vpc" {
   public_subnet = "10.0.1.0/24"
 }
 
+data "template_file" "client_config" {
+  count = "${length(var.instance_client_ips)}"
+  template = "${file("files/client_config.hcl.tpl")}"
+
+  vars {
+    hostname = "nomad-client-${format("%03d", count.index + 1)}"
+  }
+}
+
 resource "aws_instance" "nomad_client" {
   ami                         = "${lookup(var.client_ami, var.region)}"
   instance_type               = "${var.instance_type}"
@@ -41,7 +50,7 @@ resource "aws_instance" "nomad_client" {
   }
 
   provisioner "file" {
-    source      = "files/windows.hcl"
+    content      = "${element(data.template_file.client_config.*.rendered, count.index)}"
     destination = "C:\\nomad\\windows.hcl"
   }
 
@@ -55,7 +64,7 @@ resource "aws_instance" "nomad_client" {
     Name = "nomad-client-${format("%03d", count.index + 1)}"
   }
 
-  count = 2
+  count = "${length(var.instance_client_ips)}"
 }
 
 resource "aws_instance" "nomad_server" {
@@ -78,9 +87,16 @@ resource "aws_instance" "nomad_server" {
     private_key = "${file("~/.ssh/lm3corp.pem")}"
   }
 
+
+  #copy some examples to the target nomad server
   provisioner "file" {
-    source      = "files/sample.hcl"
-    destination = "/home/ubuntu/sample.hcl"
+    source      = "files/samples/docker-batch.hcl"
+    destination = "/home/ubuntu/nomad-jobs/docker-batch.hcl"
+  }
+
+  provisioner "file" {
+    source      = "files/samples/powershell-cmd-batch.hcl"
+    destination = "/home/ubuntu/nomad-jobs/powershell-cmd-batch.hcl"
   }
 
   provisioner "file" {
@@ -88,6 +104,7 @@ resource "aws_instance" "nomad_server" {
     destination = "/tmp/nomad-setup.sh"
   }
 
+  #download and install nomad server as a service
   provisioner "remote-exec" {
     inline = [
       "chmod +x /tmp/nomad-setup.sh",

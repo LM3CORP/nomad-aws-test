@@ -5,7 +5,7 @@ log_level = "DEBUG"
 data_dir = "C:\\nomad\\data_dir"
 
 # Give the agent a unique name. Defaults to hostname
-name = "client"
+name = "${hostname}"
 
 # Enable the client
 client {
