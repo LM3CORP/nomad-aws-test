@@ -10,7 +10,5 @@ Set-Alias sz "$env:ProgramFiles\7-Zip\7z.exe"
 
 sz x "C:\nomad\nomad.zip" -oC:\nomad
 
-sc.exe create "Nomad" DisplayName= "Nomad Agent" binPath= "C:\nomad\nomad.exe" agent -config windows.hcl start= auto
-
 Remove-Item C:\nomad\nomad.zip
 
