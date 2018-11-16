@@ -60,13 +60,12 @@ resource "aws_instance" "nomad_client" {
     ]
   }
 
-  /* TODO: Failing creating the service.
   provisioner "remote-exec"{
     inline = [
-      "sc.exe create 'Nomad' DisplayName= 'Nomad Agent' binPath= 'C:\\nomad\\nomad.exe agent -config windows.hcl' start= auto"
+       "C:\\ProgramData\\Chocolatey\\bin\\nssm.exe install Nomad \"c:\\nomad\\nomad.exe\" \"agent -config c:\\nomad\\windows.hcl\"",
+       "powershell.exe start-service nomad"
     ]
   }
-  */
 
   tags {
     Name = "nomad-client-${format("%03d", count.index + 1)}"

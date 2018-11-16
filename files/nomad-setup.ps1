@@ -1,5 +1,6 @@
 choco install 7zip -y
 choco install notepadplusplus -y
+choco install nssm -y
 
 $AllProtocols = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12';
 [System.Net.ServicePointManager]::SecurityProtocol = $AllProtocols;
