@@ -22,7 +22,7 @@ variable "instance_type" {
 
 variable "instance_client_ips" {
   description = "The IPs to use for our client resources"
-  default = ["10.0.1.20", "10.0.1.21"]
+  default = ["10.0.1.20", "10.0.1.21","10.0.1.22", "10.0.1.23", "10.0.1.24"]
 }
 
 variable "instance_server_ips" {
@@ -35,12 +35,13 @@ variable "server_ami"{
   default = {
     us-east-1 = "ami-0f9351b59be17920e"
   }
+  description = "Linux Ubuntu Server AMI"
 }
 
 variable "client_ami"{
   type = "map"
   default = {
-    us-east-1 = "ami-09f9b6f145f221569"
+    us-east-1 = "ami-08225ee56674c40d5"
   }
-  description = "The AMIs to use for Nomad Clients"
+  description = "Windows 2019 Core Client AMI"
 }

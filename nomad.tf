@@ -3,17 +3,19 @@ provider "aws" {
 }
 
 module "vpc" {
-  source        = "github.com/turnbullpress/tf_vpc.git?ref=v0.0.1"
-  name          = "docker"
-  cidr          = "10.0.0.0/16"
-  public_subnet = "10.0.1.0/24"
+  source         = "github.com/turnbullpress/tf_vpc.git?ref=v0.0.4"
+  key_name       = "docker"
+  environment    = "production"
+  vpc_cidr       = "10.0.0.0/16"
+  public_subnets = ["10.0.1.0/24"]
+  region         = "${var.region}"
 }
 
 data "template_file" "client_config" {
   count = "${length(var.instance_client_ips)}"
   template = "${file("files/client_config.hcl.tpl")}"
 
-  vars {
+  vars = {
     hostname = "nomad-client-${format("%03d", count.index + 1)}"
   }
 }
@@ -22,7 +24,7 @@ resource "aws_instance" "nomad_client" {
   ami                         = "${lookup(var.client_ami, var.region)}"
   instance_type               = "${var.instance_type}"
   key_name                    = "${var.key_name}"
-  subnet_id                   = "${module.vpc.public_subnet_id}"
+  subnet_id                   = "${module.vpc.public_subnet_ids[0]}"
   private_ip                  = "${var.instance_client_ips[count.index]}"
   associate_public_ip_address = true
   user_data                   = "${file("files/nomad_client_bootstrap.ps1")}"
@@ -42,6 +44,7 @@ resource "aws_instance" "nomad_client" {
     use_ntlm = false
     https    = true
     timeout  = "10m"
+    host     = "{self.public_ip}"
   }
 
   provisioner "file" {
@@ -67,7 +70,7 @@ resource "aws_instance" "nomad_client" {
     ]
   }
 
-  tags {
+  tags = {
     Name = "nomad-client-${format("%03d", count.index + 1)}"
   }
 
@@ -78,7 +81,7 @@ resource "aws_instance" "nomad_server" {
   ami                         = "${lookup(var.server_ami, var.region)}"      //need to do a lookup later
   instance_type               = "t2.micro"
   key_name                    = "${var.key_name}"
-  subnet_id                   = "${module.vpc.public_subnet_id}"
+  subnet_id                   = "${module.vpc.public_subnet_ids[0]}"
   private_ip                  = "${var.instance_server_ips[0]}"
   associate_public_ip_address = true
   user_data                   = "${file("files/nomad_server_bootstrap.sh")}"
@@ -92,18 +95,7 @@ resource "aws_instance" "nomad_server" {
     agent       = false
     user        = "ubuntu"
     private_key = "${file("~/.ssh/lm3corp.pem")}"
-  }
-
-
-  #copy some examples to the target nomad server
-  provisioner "file" {
-    source      = "files/samples/docker-batch.hcl"
-    destination = "/home/ubuntu/nomad-jobs/docker-batch.hcl"
-  }
-
-  provisioner "file" {
-    source      = "files/samples/powershell-cmd-batch.hcl"
-    destination = "/home/ubuntu/nomad-jobs/powershell-cmd-batch.hcl"
+    host        = "{self.public_ip}"
   }
 
   provisioner "file" {
@@ -119,7 +111,18 @@ resource "aws_instance" "nomad_server" {
     ]
   }
 
-  tags {
+  #copy some examples to the target nomad server
+  provisioner "file" {
+    source      = "files/samples"
+    destination = "/home/ubuntu/nomad-jobs/samples"
+  }
+
+  provisioner "file" {
+    source      = "files/samples/powershell-cmd-batch.hcl"
+    destination = "/home/ubuntu/nomad-jobs/powershell-cmd-batch.hcl"
+  }
+
+  tags = {
     Name = "nomad-server-1"
   }
 
