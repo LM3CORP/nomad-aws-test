@@ -2,13 +2,11 @@ provider "aws" {
   region = "${var.region}"
 }
 
-module "vpc" {
-  source         = "github.com/turnbullpress/tf_vpc.git?ref=v0.0.4"
-  key_name       = "docker"
-  environment    = "production"
-  vpc_cidr       = "10.0.0.0/16"
-  public_subnets = ["10.0.1.0/24"]
-  region         = "${var.region}"
+module "vpc_basic" {
+  source        = "github.com/turnbullpress/tf_vpc_basic.git?ref=v0.0.1"
+  name          = "nomad"
+  cidr          = "10.0.0.0/16"
+  public_subnet = "10.0.1.0/24"
 }
 
 data "template_file" "client_config" {
@@ -24,7 +22,7 @@ resource "aws_instance" "nomad_client" {
   ami                         = "${lookup(var.client_ami, var.region)}"
   instance_type               = "${var.instance_type}"
   key_name                    = "${var.key_name}"
-  subnet_id                   = "${module.vpc.public_subnet_ids[0]}"
+  subnet_id                   = "${module.vpc_basic.public_subnet_id}"
   private_ip                  = "${var.instance_client_ips[count.index]}"
   associate_public_ip_address = true
   user_data                   = "${file("files/nomad_client_bootstrap.ps1")}"
@@ -44,7 +42,7 @@ resource "aws_instance" "nomad_client" {
     use_ntlm = false
     https    = true
     timeout  = "10m"
-    host     = "{self.public_ip}"
+    host     = self.public_ip
   }
 
   provisioner "file" {
@@ -81,7 +79,7 @@ resource "aws_instance" "nomad_server" {
   ami                         = "${lookup(var.server_ami, var.region)}"      //need to do a lookup later
   instance_type               = "t2.micro"
   key_name                    = "${var.key_name}"
-  subnet_id                   = "${module.vpc.public_subnet_ids[0]}"
+  subnet_id                   = "${module.vpc_basic.public_subnet_id}"
   private_ip                  = "${var.instance_server_ips[0]}"
   associate_public_ip_address = true
   user_data                   = "${file("files/nomad_server_bootstrap.sh")}"
@@ -95,7 +93,7 @@ resource "aws_instance" "nomad_server" {
     agent       = false
     user        = "ubuntu"
     private_key = "${file("~/.ssh/lm3corp.pem")}"
-    host        = "{self.public_ip}"
+    host        = self.public_ip
   }
 
   provisioner "file" {
@@ -132,7 +130,7 @@ resource "aws_instance" "nomad_server" {
 resource "aws_security_group" "nomad_client_incoming_sg" {
   name        = "nomad_client_inbound"
   description = "Allow Incoming from Nomad Server"
-  vpc_id      = "${module.vpc.vpc_id}"
+  vpc_id      = "${module.vpc_basic.vpc_id}"
 
   ingress {
     from_port   = "5650"
@@ -173,7 +171,7 @@ resource "aws_security_group" "nomad_client_incoming_sg" {
 resource "aws_security_group" "nomad_server_incoming_sg" {
   name        = "nomad_server_inbound"
   description = "Allow Incoming from Nomad Clients"
-  vpc_id      = "${module.vpc.vpc_id}"
+  vpc_id      = "${module.vpc_basic.vpc_id}"
 
   ingress {
     from_port   = "4646"

@@ -1,7 +1,7 @@
-## Nomad Demo - Windows 2016 Nomad Clients - Ubuntu Nomad Servers
+## Nomad Demo - Windows 2019 Nomad Clients - Ubuntu Nomad Server
 
 
-* Windows AMIs are custom Windows 2016 Core with Chocolatey/Ruby packages.
+* Windows AMIs are custom Windows 2019 Core with Chocolatey/Ruby packages.
 
 
 ## Useful Links
