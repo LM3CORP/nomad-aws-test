@@ -2,3 +2,9 @@
 terraform.tfstate
 terraform.tfstate.backup
 .terraform.tfstate.lock.info
+.bundle/
+.idea/
+.kitchen/
+.vscode
+vendor/
+Gemfile.lock

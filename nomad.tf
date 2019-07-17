@@ -80,7 +80,7 @@ resource "aws_instance" "nomad_server" {
   instance_type               = "t2.micro"
   key_name                    = "${var.key_name}"
   subnet_id                   = "${module.vpc_basic.public_subnet_id}"
-  private_ip                  = "${var.instance_server_ips[0]}"
+  private_ip                  = "${var.instance_server_ips}"
   associate_public_ip_address = true
   user_data                   = "${file("files/nomad_server_bootstrap.sh")}"
 
@@ -123,8 +123,6 @@ resource "aws_instance" "nomad_server" {
   tags = {
     Name = "nomad-server-1"
   }
-
-  count = 1
 }
 
 resource "aws_security_group" "nomad_client_incoming_sg" {

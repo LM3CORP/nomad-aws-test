@@ -1,7 +1,7 @@
 cd $HOME
 mkdir $HOME/nomad-jobs
 sudo apt-get install unzip -y
-curl -L -o nomad.zip https://releases.hashicorp.com/nomad/0.8.6/nomad_0.8.6_linux_amd64.zip
+curl -L -o nomad.zip https://releases.hashicorp.com/nomad/0.9.3/nomad_0.9.3_linux_amd64.zip
 unzip nomad.zip
 sudo mv nomad /usr/local/bin
 nomad version
