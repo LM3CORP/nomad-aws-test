@@ -1,6 +1,6 @@
 
 control 'nomad_system' do
-  describe command('lsb_release -a') do
-    its('stdout') { should match (/Ubuntu/) }
+  describe command('nomad --version') do
+    its('stdout') { should match (/0.9.3/) }
   end
 end
