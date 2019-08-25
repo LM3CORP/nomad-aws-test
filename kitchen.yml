@@ -10,7 +10,7 @@ provisioner:
 
 transport:
   name: ssh
-  ssh_key: /home/lcentinel/.ssh/lm3corp.pem
+  ssh_key: ~/.ssh/lm3corp.pem
   username: ubuntu
   port: 22
 
@@ -22,13 +22,15 @@ verifier:
   systems:
     - name: nomad
       backend: ssh
-      hosts_output: nomad_server_ip
+      hosts_output: nomad_server_public_dns
       key_files:
-        - /home/lcentinel/.ssh/lm3corp.pem
+        - ~/.ssh/lm3corp.pem
       controls:
         - operating_system
         - nomad_system
       user: ubuntu
+      reporter:
+        - progress
 
 suites:
   - name: nomad
